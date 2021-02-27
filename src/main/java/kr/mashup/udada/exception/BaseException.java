@@ -1,6 +1,6 @@
 package kr.mashup.udada.exception;
 
-public class BaseException extends RuntimeException{
+public class BaseException extends RuntimeException {
     protected ErrorModel error;
 
     protected BaseException(ErrorModel error) {
