@@ -30,6 +30,7 @@ dependencies {
     implementation group: 'com.github.ulisesbocchio', name: 'jasypt-spring-boot-starter', version: '1.16'
     implementation group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
     implementation group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.9.2'
+    implementation group: 'org.bouncycastle', name: 'bcpkix-jdk14', version: '1.65'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
