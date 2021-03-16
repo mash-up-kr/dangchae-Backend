@@ -1,11 +1,9 @@
 package kr.mashup.udada.diary.domain;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import kr.mashup.udada.diary.dto.RequestDiaryDto;
 import kr.mashup.udada.user.domain.User;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -44,5 +42,14 @@ public class Diary {
         this.date = date;
         this.coverImgUrl = coverImgUrl;
         this.user.add(user);
+    }
+
+    public void update(RequestDiaryDto requestdto, String coverImgUrl) {
+        if(!requestdto.getTitle().isEmpty()) {
+            this.title = requestdto.getTitle();
+        }
+        if(!coverImgUrl.isEmpty()) {
+            this.coverImgUrl = coverImgUrl;
+        }
     }
 }

@@ -2,6 +2,7 @@ package kr.mashup.udada.diary.service;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.util.IOUtils;
@@ -52,5 +53,9 @@ public class S3Util {
         fileName.append(image.getOriginalFilename());
 
         return fileName.toString();
+    }
+
+    public void deleteImage(String dirName, String coverImgName) {
+        amazonS3.deleteObject(new DeleteObjectRequest(bucket + "/" + dirName, coverImgName));
     }
 }

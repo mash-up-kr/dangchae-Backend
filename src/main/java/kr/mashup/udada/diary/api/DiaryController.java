@@ -1,6 +1,6 @@
 package kr.mashup.udada.diary.api;
 
-import kr.mashup.udada.diary.dto.RequestDiaryCreateDto;
+import kr.mashup.udada.diary.dto.RequestDiaryDto;
 import kr.mashup.udada.diary.dto.ResponseDiaryDto;
 import kr.mashup.udada.diary.service.DiaryService;
 import kr.mashup.udada.user.domain.User;
@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -22,8 +21,7 @@ public class DiaryController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity createDiary(@RequestPart(value = "image") MultipartFile image,
-                                 @ModelAttribute RequestDiaryCreateDto requestDto) {
+    public ResponseEntity createDiary(@ModelAttribute RequestDiaryDto requestDto) {
 
         User user = userService.getFromUsername();
         diaryService.create(user, requestDto);
@@ -40,4 +38,18 @@ public class DiaryController {
         return ResponseEntity.status(HttpStatus.OK).body(diaryList);
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity updateDiary(@PathVariable("id") long diaryId,
+                                      @ModelAttribute RequestDiaryDto requestDto) {
+        diaryService.updateDiary(diaryId, requestDto);
+
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity deleteDiary(@PathVariable("id") long diaryId) {
+        diaryService.deleteDiary(diaryId);
+
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
 }

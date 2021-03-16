@@ -1,6 +1,5 @@
 package kr.mashup.udada.diary.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import kr.mashup.udada.diary.domain.Diary;
 import kr.mashup.udada.user.domain.User;
 import lombok.Builder;
@@ -15,7 +14,7 @@ import java.time.LocalDate;
 @Setter
 @Getter
 @NoArgsConstructor
-public class RequestDiaryCreateDto {
+public class RequestDiaryDto {
 
     private String title;
 
@@ -25,7 +24,7 @@ public class RequestDiaryCreateDto {
     private MultipartFile image;
 
     @Builder
-    private RequestDiaryCreateDto(String title, LocalDate createdDate, MultipartFile image) {
+    private RequestDiaryDto(String title, LocalDate createdDate, MultipartFile image) {
         this.title = title;
         this.createdDate = createdDate;
         this.image = image;
