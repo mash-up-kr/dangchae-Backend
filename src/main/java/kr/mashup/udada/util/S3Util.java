@@ -1,4 +1,4 @@
-package kr.mashup.udada.diary.service;
+package kr.mashup.udada.util;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
