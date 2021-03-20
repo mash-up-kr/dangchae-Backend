@@ -9,19 +9,19 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 @RestControllerAdvice
 public class UdadaExceptionHandler {
-    @ExceptionHandler(BaseException.class)
-    public ResponseEntity<ErrorModel> handleException(BaseException e) {
-        ErrorModel error = e.error;
-        log.error("REST API error : {} ", error.getMsg());
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity BadRequestException(UnauthorizedException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }
 
-        switch (error.getCode()) {
-            case 400:
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
-            case 401:
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
-            default:
-                throw new RuntimeException();
-        }
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity UnauthorizedException(UnauthorizedException e) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+    }
+
+    @ExceptionHandler(BaseException.class)
+    public ResponseEntity BaseException(BaseException e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
     }
 
     @ExceptionHandler(BaseException.class)
