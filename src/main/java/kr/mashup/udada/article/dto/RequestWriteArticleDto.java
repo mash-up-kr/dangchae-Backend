@@ -1,5 +1,6 @@
 package kr.mashup.udada.article.dto;
 
+import com.sun.istack.Nullable;
 import kr.mashup.udada.article.domain.Article;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,6 +19,7 @@ public class RequestWriteArticleDto {
 
     private String body;
 
+    @Nullable
     private MultipartFile img;
 
     public Article toEntity(String thumbnailUrl, String imgUrl) {

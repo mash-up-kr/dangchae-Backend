@@ -20,7 +20,6 @@ import java.util.Date;
 @Getter
 @NoArgsConstructor
 @Entity
-@Builder
 public class Article extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

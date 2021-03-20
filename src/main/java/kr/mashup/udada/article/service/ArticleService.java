@@ -7,16 +7,13 @@ import kr.mashup.udada.article.dto.ArticleResponseDto;
 import kr.mashup.udada.util.S3Util;
 import kr.mashup.udada.util.Thumbnail;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
 import javax.transaction.Transactional;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
 
-@Service
+@Slf4j
 @RequiredArgsConstructor
+@Service
 public class ArticleService {
 
     private final ArticleRepository articleRepository;

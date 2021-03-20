@@ -10,14 +10,8 @@ public class ResourceNotFoundException extends BaseException {
     }
 
     public ResourceNotFoundException(String msg) {
-        this(HttpStatus.NOT_FOUND.value(), msg);
-    }
-
-    public ResourceNotFoundException(int code, String msg) {
         super(ErrorModel.builder()
-                .code(code)
                 .msg(msg)
-                .timestamp(LocalDateTime.now())
                 .build());
     }
 }
