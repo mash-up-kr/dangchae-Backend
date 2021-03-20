@@ -23,4 +23,9 @@ public class UdadaExceptionHandler {
                 throw new RuntimeException();
         }
     }
+
+    @ExceptionHandler(BaseException.class)
+    public ResponseEntity ResourceNotFoundException(ResourceNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
 }
