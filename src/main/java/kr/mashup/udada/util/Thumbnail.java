@@ -13,11 +13,13 @@ import java.io.IOException;
 @Slf4j
 public class Thumbnail {
 
-    public MultipartFile createThumbnail(MultipartFile originalFile, Integer width){
+    private final int WIDTH = 100;
+
+    public MultipartFile createThumbnail(MultipartFile originalFile){
         try {
             ByteArrayOutputStream thumbOutput = new ByteArrayOutputStream();
             BufferedImage img = ImageIO.read(originalFile.getInputStream());
-            BufferedImage thumbImg = Scalr.resize(img, Scalr.Method.AUTOMATIC, Scalr.Mode.AUTOMATIC, width, Scalr.OP_ANTIALIAS);
+            BufferedImage thumbImg = Scalr.resize(img, Scalr.Method.AUTOMATIC, Scalr.Mode.AUTOMATIC, WIDTH, Scalr.OP_ANTIALIAS);
 
             ImageIO.write(thumbImg, originalFile.getContentType().split("/")[1] , thumbOutput);
             thumbOutput.flush();
