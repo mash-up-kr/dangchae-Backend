@@ -1,15 +1,13 @@
 package kr.mashup.udada.article.dto;
 
-import com.sun.istack.Nullable;
 import kr.mashup.udada.article.domain.Article;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.springframework.lang.Nullable;
 import org.springframework.web.multipart.MultipartFile;
 
-@NoArgsConstructor
-@AllArgsConstructor
 @Getter
+@Setter
+@NoArgsConstructor
 public class RequestWriteArticleDto {
     private Long writerId;
 
@@ -20,7 +18,16 @@ public class RequestWriteArticleDto {
     private String body;
 
     @Nullable
-    private MultipartFile img;
+    private MultipartFile image;
+
+    @Builder
+    private RequestWriteArticleDto(Long writerId, Long diaryId, String title, String body, MultipartFile image) {
+        this.writerId = writerId;
+        this.diaryId = diaryId;
+        this.title = title;
+        this.body = body;
+        this.image = image;
+    }
 
     public Article toEntity(String thumbnailUrl, String imgUrl) {
         return Article.builder()
@@ -28,8 +35,9 @@ public class RequestWriteArticleDto {
                 .diaryId(diaryId)
                 .title(title)
                 .body(body)
-                .thumbImg(thumbnailUrl)
+                .thumbnail(thumbnailUrl)
                 .image(imgUrl)
                 .build();
     }
 }
+

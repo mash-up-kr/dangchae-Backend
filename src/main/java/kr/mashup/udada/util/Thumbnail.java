@@ -15,9 +15,9 @@ import java.io.IOException;
 @Component
 public class Thumbnail {
 
-    private final int WIDTH = 100;
+    private static final int WIDTH = 100;
 
-    public MultipartFile createThumbnail(MultipartFile originalFile){
+    public MultipartFile createThumbnail(MultipartFile originalFile) {
         try {
             ByteArrayOutputStream thumbOutput = new ByteArrayOutputStream();
             BufferedImage img = ImageIO.read(originalFile.getInputStream());
@@ -27,7 +27,7 @@ public class Thumbnail {
             thumbOutput.flush();
 
             return new MultipartImage(thumbOutput.toByteArray(),
-                    "thumb_" + originalFile.getName()+ "." +MediaType.MULTIPART_FORM_DATA_VALUE.toString(),
+                    "thumb_" + originalFile.getName() + "." + MediaType.MULTIPART_FORM_DATA_VALUE,
                     originalFile.getName(), MediaType.MULTIPART_FORM_DATA_VALUE, thumbOutput.size());
         } catch (IOException e) {
             log.error(e.getMessage());

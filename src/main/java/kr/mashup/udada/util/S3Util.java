@@ -14,6 +14,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -44,6 +46,18 @@ public class S3Util {
         }
 
         return amazonS3.getUrl(bucket, fileName).toString();
+    }
+
+    public String parseUrl(String url) {
+        String fileName = "";
+        try {
+            URL fullURL = new URL(url);
+            String filePath = fullURL.getFile().split("/")[1];
+            fileName = fullURL.getFile().split("/")[2];
+        } catch(MalformedURLException e) {
+            log.info(e.getMessage());
+        }
+        return fileName;
     }
 
     private String makeFileName(String dirName, MultipartFile image) {
