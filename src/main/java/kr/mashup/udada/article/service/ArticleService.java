@@ -39,7 +39,7 @@ public class ArticleService {
         String imgUrl = "";
 
         if (requestBody.getImage() != null) {
-            thumbImgUrl = s3Util.upload(THUMB_DIR_NAME, thumbnail.createThumbnail(requestBody.getImage()));
+//            thumbImgUrl = s3Util.upload(THUMB_DIR_NAME, thumbnail.createThumbnail(requestBody.getImage()));
             imgUrl = s3Util.upload(ARTICLE_DIR_NAME, requestBody.getImage());
         }
 
