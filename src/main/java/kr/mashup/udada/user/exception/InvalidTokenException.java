@@ -5,5 +5,5 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class InvalidAppleCodeException extends Throwable{
+public class InvalidTokenException extends RuntimeException {
 }

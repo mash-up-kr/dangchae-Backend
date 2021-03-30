@@ -32,6 +32,8 @@ public class JwtProvider {
 
     private long tokenValidTime = 30 * 24 * 60 * 60 * 1000L;
 
+    private long refreshTokenValidTime = 365 * 24 * 60 * 60 * 1000L;
+
     public static final String HEADER_NAME = "Authorization";
 
     private final UserDetailsService userDetailsService;
@@ -45,6 +47,13 @@ public class JwtProvider {
         Claims claims = Jwts.claims().setSubject(sub);
         Date date = new Date();
         return Jwts.builder().setClaims(claims).setIssuedAt(date).setExpiration(new Date(date.getTime() + tokenValidTime))
+                .signWith(SignatureAlgorithm.HS256, secretKey).compact();
+    }
+
+    public String createRefreshToken(String sub) {
+        Claims claims = Jwts.claims().setSubject(sub);
+        Date date = new Date();
+        return Jwts.builder().setClaims(claims).setIssuedAt(date).setExpiration(new Date(date.getTime() + refreshTokenValidTime))
                 .signWith(SignatureAlgorithm.HS256, secretKey).compact();
     }
 

@@ -6,11 +6,11 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public class CodeValidationDTO {
-    private String client_id = "";
+    private String client_id = "com.dangchae.udada.web";
     private final String client_secret;
     private final String code;
     private String grant_type = "authorization_code";
-    private String redirect_uri = "http://ysjleader.com/intro";
+    private String redirect_uri = "https://ysjleader.com";
 
     @Override
     public String toString() {
