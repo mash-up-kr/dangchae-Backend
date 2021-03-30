@@ -21,12 +21,13 @@ import java.io.IOException;
 public class S3Util {
 
     private final AmazonS3 amazonS3;
+    private final FileNameUtil fileNameUtil;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
     public String upload(String dirName, MultipartFile image) {
-        String fileName = makeFileName(dirName, image);
+        String fileName = fileNameUtil.makeFileName(dirName, image);
 
         try {
             byte[] bytes = IOUtils.toByteArray(image.getInputStream());
@@ -44,15 +45,6 @@ public class S3Util {
         }
 
         return amazonS3.getUrl(bucket, fileName).toString();
-    }
-
-    private String makeFileName(String dirName, MultipartFile image) {
-        StringBuilder fileName = new StringBuilder();
-        fileName.append(dirName);
-        fileName.append("/");
-        fileName.append(image.getOriginalFilename());
-
-        return fileName.toString();
     }
 
     public void deleteImage(String dirName, String coverImgName) {
