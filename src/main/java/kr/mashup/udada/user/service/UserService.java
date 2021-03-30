@@ -16,6 +16,10 @@ import kr.mashup.udada.user.exception.InvalidVendorException;
 import kr.mashup.udada.user.exception.NeedSignUpException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -23,7 +27,7 @@ import javax.transaction.Transactional;
 @RequiredArgsConstructor
 @Slf4j
 @Service
-public class UserService {
+public class UserService implements UserDetailsService {
 
     private final AppleLogin appleLogin;
     private final UserRepository userRepository;
@@ -76,6 +80,29 @@ public class UserService {
         signUpRequestDTO.setUsername(getVendorUsername(signUpRequestDTO.getVendor(), signUpRequestDTO.getToken()));
         userRepository.save(signUpRequestDTO.toEntity());
     }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(ResourceNotFoundException::new);
+        if(!user.getUsername().equals(username)) {
+            throw new ResourceNotFoundException();
+        }
+
+        return org.springframework.security.core.userdetails.User.builder().username(username).password("").roles("").build();
+    }
+
+    public User getFromUsername() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserDetails userDetails = (UserDetails)principal;
+
+        String username = userDetails.getUsername();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(ResourceNotFoundException::new);
+
+        return user;
+    }
+
 
 
 }
