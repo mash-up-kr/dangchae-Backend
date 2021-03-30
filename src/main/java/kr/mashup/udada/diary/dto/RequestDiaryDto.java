@@ -22,12 +22,14 @@ public class RequestDiaryDto {
     private LocalDate createdDate;
 
     private MultipartFile image;
+    private String imageUrl;
 
     @Builder
-    private RequestDiaryDto(String title, LocalDate createdDate, MultipartFile image) {
+    private RequestDiaryDto(String title, LocalDate createdDate, MultipartFile image, String imageUrl) {
         this.title = title;
         this.createdDate = createdDate;
         this.image = image;
+        this.imageUrl = imageUrl;
     }
 
     public Diary toEntity(String coverImgUrl, User user) {

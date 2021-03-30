@@ -2,6 +2,7 @@ package kr.mashup.udada.diary.api;
 
 import kr.mashup.udada.diary.dto.RequestDiaryDto;
 import kr.mashup.udada.diary.dto.ResponseDiaryDto;
+import kr.mashup.udada.diary.dto.ResponseInvitationUrlDto;
 import kr.mashup.udada.diary.service.DiaryService;
 import kr.mashup.udada.user.domain.User;
 import kr.mashup.udada.user.service.UserService;
@@ -30,10 +31,10 @@ public class DiaryController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ResponseDiaryDto>>findDiary() {
+    public ResponseEntity<List<ResponseDiaryDto>>getDiary() {
 
         User user = userService.getFromUsername();
-        List<ResponseDiaryDto> diaryList = diaryService.findDiariesOf(user.getId());
+        List<ResponseDiaryDto> diaryList = diaryService.getDiariesOf(user.getId());
 
         return ResponseEntity.status(HttpStatus.OK).body(diaryList);
     }
@@ -48,7 +49,28 @@ public class DiaryController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity deleteDiary(@PathVariable("id") long diaryId) {
-        diaryService.deleteDiary(diaryId);
+
+        User user = userService.getFromUsername();
+        diaryService.deleteDiary(diaryId, user);
+
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @GetMapping("/{id}/invite")
+    public ResponseEntity makeInvitationUrl(@PathVariable("id") long diaryId) {
+
+        User user = userService.getFromUsername();
+        String url = diaryService.makeInvitationUrl(diaryId, user);
+        ResponseInvitationUrlDto invitationDto = new ResponseInvitationUrlDto(url);
+
+        return ResponseEntity.status(HttpStatus.OK).body(invitationDto);
+    }
+
+    @PostMapping("/invite")
+    public ResponseEntity inviteMember(@RequestParam(value = "token") String token) {
+
+        User invitee = userService.getFromUsername();
+        diaryService.inviteMember(token, invitee);
 
         return ResponseEntity.status(HttpStatus.OK).build();
     }
