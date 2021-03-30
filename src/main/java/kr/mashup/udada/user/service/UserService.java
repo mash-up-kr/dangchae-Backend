@@ -2,6 +2,7 @@ package kr.mashup.udada.user.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import kr.mashup.udada.config.jwt.JwtProvider;
+import kr.mashup.udada.exception.ResourceNotFoundException;
 import kr.mashup.udada.user.domain.sign_in.KakaoLogin;
 import kr.mashup.udada.user.common.Vendor;
 import kr.mashup.udada.user.domain.User;

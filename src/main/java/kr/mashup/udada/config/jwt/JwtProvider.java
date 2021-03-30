@@ -36,8 +36,6 @@ public class JwtProvider {
 
     public static final String HEADER_NAME = "Authorization";
 
-    private final UserDetailsService userDetailsService;
-
     @PostConstruct
     protected void init() {
         secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
@@ -57,7 +55,7 @@ public class JwtProvider {
                 .signWith(SignatureAlgorithm.HS256, secretKey).compact();
     }
 
-    public Authentication getAuthentication(String token) {
+    public Authentication getAuthentication(String token, UserDetailsService userDetailsService) {
         UserDetails userDetails = userDetailsService.loadUserByUsername(getUserSub(token));
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }

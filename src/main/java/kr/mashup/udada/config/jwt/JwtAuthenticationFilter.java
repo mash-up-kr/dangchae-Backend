@@ -3,6 +3,7 @@ package kr.mashup.udada.config.jwt;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.filter.GenericFilterBean;
 
 import javax.servlet.FilterChain;
@@ -17,6 +18,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends GenericFilterBean {
 
     private final JwtProvider jwtProvider;
+    private final UserDetailsService userDetailsService;
 
     /**
      * 보통 JWT토큰은 header에 담아서 요청을 보냄
@@ -38,7 +40,7 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
         System.out.println(((HttpServletRequest)request).getRequestURL());
         String token = jwtProvider.getTokenFromHeader(((HttpServletRequest) request));
         if (token != null && jwtProvider.validateTokenIssuedDate(token)) {
-            Authentication authentication = jwtProvider.getAuthentication(token);
+            Authentication authentication = jwtProvider.getAuthentication(token, userDetailsService);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } else {
             HttpServletResponse httpServletResponse = (HttpServletResponse) response;
