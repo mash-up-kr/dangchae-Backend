@@ -34,7 +34,7 @@ public class Diary {
             joinColumns = @JoinColumn(name = "DIARY_ID"),
             inverseJoinColumns = @JoinColumn(name = "USER_ID")
             )
-    private List<User> user = new ArrayList<>();
+    private final List<User> user = new ArrayList<>();
 
     @Builder
     public Diary(String title, String coverImgUrl, User user, LocalDate date) {

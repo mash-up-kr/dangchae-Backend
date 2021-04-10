@@ -1,6 +1,8 @@
 package kr.mashup.udada.exception;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import kr.mashup.udada.user.dto.common.ResponseDTO;
+import kr.mashup.udada.user.exception.EmptyTokenException;
 import kr.mashup.udada.user.exception.InvalidTokenException;
 import kr.mashup.udada.user.exception.NeedSignUpException;
 import lombok.extern.slf4j.Slf4j;
@@ -35,5 +37,15 @@ public class UdadaExceptionHandler {
     @ExceptionHandler(NeedSignUpException.class)
     public ResponseEntity needSignUpException() {
         return ResponseEntity.status(404).body(ResponseDTO.builder().data("Need Sign Up").build());
+    }
+
+    @ExceptionHandler(EmptyTokenException.class)
+    public ResponseEntity emptyTokenException() {
+        return ResponseEntity.status(400).body(ResponseDTO.builder().data("Need Token").build());
+    }
+
+    @ExceptionHandler(ExpiredJwtException.class)
+    public ResponseEntity expiredJwtException() {
+        return ResponseEntity.status(400).body(ResponseDTO.builder().data("Need To Refresh Token").build());
     }
 }

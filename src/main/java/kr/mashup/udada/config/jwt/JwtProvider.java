@@ -1,9 +1,7 @@
 package kr.mashup.udada.config.jwt;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
+import kr.mashup.udada.user.exception.EmptyTokenException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -65,14 +63,23 @@ public class JwtProvider {
     }
 
     public String getTokenFromHeader(HttpServletRequest request) {
+        checkEmptyToken(request);
         return request.getHeader(HEADER_NAME).replace("Bearer", "").trim();
+    }
+
+    private void checkEmptyToken(HttpServletRequest request) {
+        if(request.getHeader(HEADER_NAME) == null) {
+            throw new EmptyTokenException();
+        }
     }
 
     public boolean validateTokenIssuedDate(String token) {
         try {
             Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
             return !claims.getBody().getExpiration().before(new Date());
-        }catch (Exception e) {
+        }catch (ExpiredJwtException e) {
+            throw e;
+        } catch (Exception e) {
             return false;
         }
     }

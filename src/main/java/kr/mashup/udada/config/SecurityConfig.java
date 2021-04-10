@@ -20,7 +20,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().mvcMatchers("/users/**", "/h2-console/**", "/error",
+        web.ignoring().antMatchers( "/users/**", "/h2-console/**", "/error",
                 "/v2/api-docs",
                 "/configuration/ui",
                 "/swagger-resources/**",
@@ -31,7 +31,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-
         // Http Basic 을 비활성화 하겠다.
         http.httpBasic().disable();
         // csrf 비활성화
