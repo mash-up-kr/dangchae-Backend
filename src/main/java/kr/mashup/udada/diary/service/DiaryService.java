@@ -3,10 +3,12 @@ package kr.mashup.udada.diary.service;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import kr.mashup.udada.config.jwt.InvitationJwt;
 import kr.mashup.udada.diary.dao.DiaryRepository;
 import kr.mashup.udada.diary.domain.Diary;
 import kr.mashup.udada.diary.dto.RequestDiaryDto;
 import kr.mashup.udada.diary.dto.ResponseDiaryDto;
+import kr.mashup.udada.diary.vo.InvitationInfo;
 import kr.mashup.udada.exception.BadRequestException;
 import kr.mashup.udada.exception.ResourceNotFoundException;
 import kr.mashup.udada.user.dao.UserRepository;
@@ -31,6 +33,7 @@ public class DiaryService {
     private final UserRepository userRepository;
     private final S3Util s3Util;
     private final FileUtil fileUtil;
+    private final InvitationJwt invitationJwt;
 
     @Value("${jwt.secret-key}")
     private String secretKey;
@@ -92,42 +95,23 @@ public class DiaryService {
     }
 
     public String makeInvitationUrl(long diaryId, User user) {
-        secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
-
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("inviterId", user.getId());
-        claims.put("diaryId", diaryId);
-
-        String jwt = Jwts.builder()
-                .setClaims(claims)
-                .setIssuedAt(new Date())
-                .signWith(SignatureAlgorithm.HS256, secretKey)
-                .compact();
-
-        String url = "http://ysjleader.com:8080/diaries/invite?token=" + jwt;
-
-        return url;
+        InvitationInfo info = new InvitationInfo(diaryId, user.getId());
+        String token = invitationJwt.createToken(info);
+        return "http://ysjleader.com:8080/diaries/invite?token=" + token;
     }
 
     @Transactional
     public void inviteMember(String token, User invitee) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(secretKey)
-                .parseClaimsJws(token)
-                .getBody();
+        InvitationInfo info = invitationJwt.getInfoFromToken(token);
 
-        Long inviterId = claims.get("inviterId", Long.class);
-        Long diaryId = claims.get("diaryId", Long.class);
-
-        Diary diary = diaryRepository.findById(diaryId)
+        Diary diary = diaryRepository.findById(info.getDiaryId())
                 .orElseThrow(ResourceNotFoundException::new);
-        User inviter = userRepository.findById(inviterId)
+        User inviter = userRepository.findById(info.getInviterId())
                 .orElseThrow(ResourceNotFoundException::new);
 
         if(!diary.getUser().contains(inviter) && diary.getUser().contains(invitee)) {
             throw new BadRequestException();
         }
-
         diary.inviteMember(invitee);
     }
 }
