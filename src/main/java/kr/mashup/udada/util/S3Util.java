@@ -21,13 +21,13 @@ import java.io.IOException;
 public class S3Util {
 
     private final AmazonS3 amazonS3;
-    private final FileNameUtil fileNameUtil;
+    private final FileUtil fileUtil;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    public String upload(String dirName, MultipartFile image) {
-        String fileName = fileNameUtil.makeFileName(dirName, image);
+    public String upload(String dirName, MultipartFile image, String username) {
+        String fileName = fileUtil.makeFileName(dirName, username);
 
         try {
             byte[] bytes = IOUtils.toByteArray(image.getInputStream());
@@ -43,11 +43,11 @@ public class S3Util {
             e.printStackTrace();
             log.error("{} upload fail", fileName);
         }
-
         return amazonS3.getUrl(bucket, fileName).toString();
     }
 
-    public void deleteImage(String dirName, String coverImgName) {
-        amazonS3.deleteObject(new DeleteObjectRequest(bucket + "/" + dirName, coverImgName));
+    public void deleteImage(String filePath) {
+        log.info(filePath);
+        amazonS3.deleteObject(bucket, filePath);
     }
 }

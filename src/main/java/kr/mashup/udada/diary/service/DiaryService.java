@@ -11,7 +11,7 @@ import kr.mashup.udada.exception.BadRequestException;
 import kr.mashup.udada.exception.ResourceNotFoundException;
 import kr.mashup.udada.user.dao.UserRepository;
 import kr.mashup.udada.user.domain.User;
-import kr.mashup.udada.util.FileNameUtil;
+import kr.mashup.udada.util.FileUtil;
 import kr.mashup.udada.util.S3Util;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +30,7 @@ public class DiaryService {
     private final DiaryRepository diaryRepository;
     private final UserRepository userRepository;
     private final S3Util s3Util;
-    private final FileNameUtil fileNameUtil;
+    private final FileUtil fileUtil;
 
     @Value("${jwt.secret-key}")
     private String secretKey;
@@ -42,7 +42,7 @@ public class DiaryService {
         String coverImgUrl = "";
 
         if(!requestDto.getImage().isEmpty()) {
-            coverImgUrl = s3Util.upload(DIR_NAME, requestDto.getImage());
+            coverImgUrl = s3Util.upload(DIR_NAME, requestDto.getImage(), user.getUsername());
         }
         Diary diary = requestDto.toEntity(coverImgUrl, user);
         diaryRepository.save(diary);
@@ -65,19 +65,18 @@ public class DiaryService {
     }
 
     @Transactional
-    public void updateDiary(long diaryId, RequestDiaryDto requestdto) {
+    public void updateDiary(long diaryId, RequestDiaryDto requestdto, User user) {
         String coverImgUrl = requestdto.getImageUrl();
-
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(ResourceNotFoundException::new);
 
         if(requestdto.getImageUrl().isEmpty()) {
-            String fileName = fileNameUtil.getFileNameFromUrl(diary.getCoverImgUrl());
+            String fileName = fileUtil.getFileNameFromUrl(diary.getCoverImgUrl());
             if(!fileName.isEmpty()) {
-                s3Util.deleteImage(DIR_NAME, fileName);
+                s3Util.deleteImage(fileName);
             }
             if(!requestdto.getImage().isEmpty()) {
-                coverImgUrl = s3Util.upload(DIR_NAME, requestdto.getImage());
+                coverImgUrl = s3Util.upload(DIR_NAME, requestdto.getImage(), user.getUsername());
             }
         }
 
@@ -86,7 +85,6 @@ public class DiaryService {
 
     @Transactional
     public void deleteDiary(long diaryId, User user) {
-
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(ResourceNotFoundException::new);
 
@@ -94,7 +92,6 @@ public class DiaryService {
     }
 
     public String makeInvitationUrl(long diaryId, User user) {
-
         secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
 
         Map<String, Object> claims = new HashMap<>();
