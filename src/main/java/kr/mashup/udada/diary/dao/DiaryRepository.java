@@ -7,5 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface DiaryRepository extends JpaRepository<Diary, Long> {
+
     List<Diary> findByUserId(Long userId);
 }

@@ -48,8 +48,10 @@ public class Diary {
         if(!requestdto.getTitle().isEmpty()) {
             this.title = requestdto.getTitle();
         }
-        if(!coverImgUrl.isEmpty()) {
-            this.coverImgUrl = coverImgUrl;
-        }
+        this.coverImgUrl = coverImgUrl;
+    }
+
+    public void inviteMember(User user) {
+        this.user.add(user);
     }
 }

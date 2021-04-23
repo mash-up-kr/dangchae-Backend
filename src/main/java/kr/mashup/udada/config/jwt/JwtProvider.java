@@ -1,9 +1,11 @@
 package kr.mashup.udada.config.jwt;
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import kr.mashup.udada.user.exception.EmptyTokenException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -18,7 +20,7 @@ import java.util.Date;
 
 @RequiredArgsConstructor
 @Component
-public class JwtProvider {
+public class JwtProvider extends Jwt<String> {
 
     /**
      * 1. JWT 토큰 생성
@@ -33,6 +35,8 @@ public class JwtProvider {
     private long refreshTokenValidTime = 365 * 24 * 60 * 60 * 1000L;
 
     public static final String HEADER_NAME = "Authorization";
+
+    private final UserDetailsService userDetailsService;
 
     @PostConstruct
     protected void init() {
@@ -53,12 +57,13 @@ public class JwtProvider {
                 .signWith(SignatureAlgorithm.HS256, secretKey).compact();
     }
 
-    public Authentication getAuthentication(String token, UserDetailsService userDetailsService) {
-        UserDetails userDetails = userDetailsService.loadUserByUsername(getUserSub(token));
+    public Authentication getAuthentication(String token) {
+        UserDetails userDetails = userDetailsService.loadUserByUsername(getInfoFromToken(token));
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
 
-    public String getUserSub(String token) {
+    @Override
+    public String getInfoFromToken(String token) {
         return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
     }
 
@@ -77,10 +82,9 @@ public class JwtProvider {
         try {
             Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
             return !claims.getBody().getExpiration().before(new Date());
-        }catch (ExpiredJwtException e) {
-            throw e;
-        } catch (Exception e) {
+        }catch (Exception e) {
             return false;
         }
     }
+
 }
