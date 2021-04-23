@@ -9,10 +9,12 @@ import com.amazonaws.util.IOUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -45,6 +47,20 @@ public class S3Util {
             e.printStackTrace();
             log.error("{} upload fail", fileName);
         }
+        return amazonS3.getUrl(bucket, fileName).toString();
+    }
+
+    public String uploadThumbnail(String dirName, ByteArrayOutputStream image, String fileName) {
+        byte[] bytes = image.toByteArray();
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(bytes.length);
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
+        metadata.setContentType(MediaType.IMAGE_JPEG_VALUE);
+
+        PutObjectRequest putObjectRequest = new PutObjectRequest(bucket, fileName, byteArrayInputStream, metadata)
+                .withCannedAcl(CannedAccessControlList.PublicRead);
+        amazonS3.putObject(putObjectRequest);
+
         return amazonS3.getUrl(bucket, fileName).toString();
     }
 

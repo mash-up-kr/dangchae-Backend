@@ -4,6 +4,8 @@ import kr.mashup.udada.article.dto.RequestWriteArticleDto;
 import kr.mashup.udada.article.dto.ResponseArticleDto;
 import kr.mashup.udada.article.dto.ResponseArticleListDto;
 import kr.mashup.udada.article.service.ArticleService;
+import kr.mashup.udada.user.domain.User;
+import kr.mashup.udada.user.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -20,8 +22,11 @@ public class ArticleController {
 
     private final ArticleService articleService;
 
-    public ArticleController(ArticleService articleService) {
+    private final UserService userService;
+
+    public ArticleController(ArticleService articleService, UserService userService) {
         this.articleService = articleService;
+        this.userService = userService;
     }
 
     @GetMapping("{articleId}")
@@ -40,14 +45,15 @@ public class ArticleController {
 
     @PostMapping("")
     public ResponseEntity<ResponseArticleDto> writeArticle(@ModelAttribute RequestWriteArticleDto requestBody) {
-        return ResponseEntity.status(HttpStatus.OK).body(articleService.writeArticle(requestBody));
+        User user = userService.getFromUsername();
+        return ResponseEntity.status(HttpStatus.OK).body(articleService.writeArticle(user, requestBody));
     }
 
     @PutMapping("")
     public ResponseEntity<ResponseArticleDto> updateArticle(@RequestParam Long diaryId, @RequestParam Long articleId,
                                                             @ModelAttribute RequestWriteArticleDto requestBody) {
-
-        return ResponseEntity.status(HttpStatus.OK).body(articleService.updateArticle(requestBody, diaryId, articleId));
+        User user = userService.getFromUsername();
+        return ResponseEntity.status(HttpStatus.OK).body(articleService.updateArticle(requestBody, diaryId, articleId, user));
     }
 
     @DeleteMapping("")
