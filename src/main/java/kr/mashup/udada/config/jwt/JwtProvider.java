@@ -5,42 +5,31 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Base64;
 import java.util.Date;
 
 @RequiredArgsConstructor
 @Component
-public class JwtProvider {
+public class JwtProvider extends Jwt<String> {
 
     /**
      * 1. JWT 토큰 생성
      * 2. JWT 토큰 Validation Check
      * 3. Authentication 객체 생성
      */
-    @Value("${jwt.secret-key}")
-    private String secretKey;
-
     private long tokenValidTime = 30 * 24 * 60 * 60 * 1000L;
 
     public static final String HEADER_NAME = "Authorization";
 
     private final UserDetailsService userDetailsService;
 
-    @PostConstruct
-    protected void init() {
-        secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
-    }
-
+    @Override
     public String createToken(String sub) {
         Claims claims = Jwts.claims().setSubject(sub);
         Date date = new Date();
@@ -49,11 +38,12 @@ public class JwtProvider {
     }
 
     public Authentication getAuthentication(String token) {
-        UserDetails userDetails = userDetailsService.loadUserByUsername(getUserSub(token));
+        UserDetails userDetails = userDetailsService.loadUserByUsername(getInfoFromToken(token));
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
 
-    public String getUserSub(String token) {
+    @Override
+    public String getInfoFromToken(String token) {
         return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
     }
 

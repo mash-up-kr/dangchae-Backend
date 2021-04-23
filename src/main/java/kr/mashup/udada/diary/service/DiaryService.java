@@ -1,20 +1,27 @@
 package kr.mashup.udada.diary.service;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import kr.mashup.udada.config.jwt.InvitationJwt;
 import kr.mashup.udada.diary.dao.DiaryRepository;
 import kr.mashup.udada.diary.domain.Diary;
 import kr.mashup.udada.diary.dto.RequestDiaryDto;
 import kr.mashup.udada.diary.dto.ResponseDiaryDto;
+import kr.mashup.udada.diary.vo.InvitationInfo;
+import kr.mashup.udada.exception.BadRequestException;
 import kr.mashup.udada.exception.ResourceNotFoundException;
+import kr.mashup.udada.user.dao.UserRepository;
 import kr.mashup.udada.user.domain.User;
+import kr.mashup.udada.util.FileUtil;
 import kr.mashup.udada.util.S3Util;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -23,19 +30,29 @@ import java.util.stream.Collectors;
 public class DiaryService {
 
     private final DiaryRepository diaryRepository;
+    private final UserRepository userRepository;
     private final S3Util s3Util;
+    private final FileUtil fileUtil;
+    private final InvitationJwt invitationJwt;
+
+    @Value("${jwt.secret-key}")
+    private String secretKey;
 
     private static final String DIR_NAME = "diary";
 
     @Transactional
     public void create(User user, RequestDiaryDto requestDto) {
-        String coverImgUrl = s3Util.upload(DIR_NAME, requestDto.getImage());
+        String coverImgUrl = "";
+
+        if(!requestDto.getImage().isEmpty()) {
+            coverImgUrl = s3Util.upload(DIR_NAME, requestDto.getImage(), user.getUsername());
+        }
         Diary diary = requestDto.toEntity(coverImgUrl, user);
         diaryRepository.save(diary);
     }
 
     @Transactional(readOnly = true)
-    public List<ResponseDiaryDto> findDiariesOf(Long userId) {
+    public List<ResponseDiaryDto> getDiariesOf(Long userId) {
         return diaryRepository.findByUserId(userId)
                 .stream()
                 .map(diary -> ResponseDiaryDto.builder()
@@ -51,42 +68,50 @@ public class DiaryService {
     }
 
     @Transactional
-    public void updateDiary(long diaryId, RequestDiaryDto requestdto) {
-        String coverImgUrl = "";
-
+    public void updateDiary(long diaryId, RequestDiaryDto requestdto, User user) {
+        String coverImgUrl = requestdto.getImageUrl();
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(ResourceNotFoundException::new);
 
-        if(!requestdto.getImage().isEmpty()) {
-            String fileName = parseUrl(diary.getCoverImgUrl());
-            s3Util.deleteImage(DIR_NAME, fileName);
-
-            coverImgUrl = s3Util.upload(DIR_NAME, requestdto.getImage());
+        if(requestdto.getImageUrl().isEmpty()) {
+            String fileName = fileUtil.getFileNameFromUrl(diary.getCoverImgUrl());
+            if(!fileName.isEmpty()) {
+                s3Util.deleteImage(fileName);
+            }
+            if(!requestdto.getImage().isEmpty()) {
+                coverImgUrl = s3Util.upload(DIR_NAME, requestdto.getImage(), user.getUsername());
+            }
         }
 
         diary.update(requestdto, coverImgUrl);
     }
 
     @Transactional
-    public void deleteDiary(long diaryId) {
-
+    public void deleteDiary(long diaryId, User user) {
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(ResourceNotFoundException::new);
 
-        String fileName = parseUrl(diary.getCoverImgUrl());
-        s3Util.deleteImage(DIR_NAME, fileName);
-        diaryRepository.deleteById(diaryId);
+        diary.getUser().remove(user);
     }
 
-    private String parseUrl(String url) {
-        String fileName = "";
-        try {
-            URL fullURL = new URL(url);
-            String filePath = fullURL.getFile().split("/")[1];
-            fileName = fullURL.getFile().split("/")[2];
-        } catch(MalformedURLException e) {
-            log.info(e.getMessage());
+    public String makeInvitationUrl(long diaryId, User user) {
+        InvitationInfo info = new InvitationInfo(diaryId, user.getId());
+        String token = invitationJwt.createToken(info);
+        return "http://ysjleader.com:8080/diaries/invite?token=" + token;
+    }
+
+    @Transactional
+    public void inviteMember(String token, User invitee) {
+        InvitationInfo info = invitationJwt.getInfoFromToken(token);
+
+        Diary diary = diaryRepository.findById(info.getDiaryId())
+                .orElseThrow(ResourceNotFoundException::new);
+        User inviter = userRepository.findById(info.getInviterId())
+                .orElseThrow(ResourceNotFoundException::new);
+
+        if(!diary.getUser().contains(inviter) && diary.getUser().contains(invitee)) {
+            throw new BadRequestException();
         }
-        return fileName;
+        diary.inviteMember(invitee);
     }
 }
