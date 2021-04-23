@@ -6,6 +6,8 @@ import kr.mashup.udada.article.dto.RequestWriteArticleDto;
 import kr.mashup.udada.article.dto.ResponseArticleDto;
 import kr.mashup.udada.article.dto.ResponseArticleListDto;
 import kr.mashup.udada.exception.ResourceNotFoundException;
+import kr.mashup.udada.user.domain.User;
+import kr.mashup.udada.util.FileUtil;
 import kr.mashup.udada.util.S3Util;
 import kr.mashup.udada.util.Thumbnail;
 import lombok.RequiredArgsConstructor;
@@ -28,19 +30,22 @@ public class ArticleService {
 
     private final S3Util s3Util;
 
+    private final FileUtil fileUtil;
+
     private final Thumbnail thumbnail;
 
     private static final String THUMB_DIR_NAME = "thumbnail";
     private static final String ARTICLE_DIR_NAME = "article";
 
     @Transactional
-    public ResponseArticleDto writeArticle(RequestWriteArticleDto requestBody) {
+    public ResponseArticleDto writeArticle(User user, RequestWriteArticleDto requestBody) {
         String thumbImgUrl = "";
         String imgUrl = "";
 
         if (requestBody.getImage() != null) {
-//            thumbImgUrl = s3Util.upload(THUMB_DIR_NAME, thumbnail.createThumbnail(requestBody.getImage()));
-            imgUrl = s3Util.upload(ARTICLE_DIR_NAME, requestBody.getImage());
+            imgUrl = s3Util.upload(ARTICLE_DIR_NAME, requestBody.getImage(), user.getUsername());
+            String thumbImgName = "thumb_" + fileUtil.getFileNameFromUrl(imgUrl);
+            thumbImgUrl = s3Util.uploadThumbnail(THUMB_DIR_NAME, thumbnail.createThumbnail(requestBody.getImage()), thumbImgName);
         }
 
         Article article = requestBody.toEntity(thumbImgUrl, imgUrl);
@@ -61,23 +66,24 @@ public class ArticleService {
     }
 
     @Transactional
-    public ResponseArticleDto updateArticle(RequestWriteArticleDto requestBody, Long diaryId, Long articleId) {
+    public ResponseArticleDto updateArticle(RequestWriteArticleDto requestBody, Long diaryId, Long articleId, User user) {
 
         Article article = articleRepository.findByIdAndDiaryId(articleId, diaryId)
                 .orElseThrow(ResourceNotFoundException::new);
 
-        String thumbnailName = "";
         String imageName = "";
+        String thumbnailName = "";
 
         if(requestBody.getImage() != null) {
-            thumbnailName = s3Util.parseUrl(article.getThumbnail());
-            imageName = s3Util.parseUrl(article.getImage());
+            imageName = fileUtil.getFileNameFromUrl(article.getImage());
+            thumbnailName = fileUtil.getFileNameFromUrl(article.getThumbnail());
 
-            s3Util.deleteImage(THUMB_DIR_NAME, thumbnailName);
-            s3Util.deleteImage(ARTICLE_DIR_NAME, imageName);
+            s3Util.deleteImage(imageName);
+            s3Util.deleteImage(thumbnailName);
 
-            s3Util.upload(THUMB_DIR_NAME, thumbnail.createThumbnail(requestBody.getImage()));
-            s3Util.upload(ARTICLE_DIR_NAME, requestBody.getImage());
+            String imgUrl = s3Util.upload(ARTICLE_DIR_NAME, requestBody.getImage(), user.getUsername());
+            String thumbImgName = "thumb_" + fileUtil.getFileNameFromUrl(imgUrl);
+            s3Util.uploadThumbnail(THUMB_DIR_NAME, thumbnail.createThumbnail(requestBody.getImage()), imageName);
         }
 
         article.update(requestBody, thumbnailName, imageName);

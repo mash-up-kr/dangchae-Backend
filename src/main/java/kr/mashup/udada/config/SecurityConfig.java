@@ -8,7 +8,6 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @RequiredArgsConstructor
@@ -16,11 +15,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final JwtProvider jwtProvider;
-    private final UserDetailsService userDetailsService;
 
     @Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers( "/users/**", "/h2-console/**", "/error",
+        web.ignoring().mvcMatchers("/user/**", "/h2-console/**", "/error",
                 "/v2/api-docs",
                 "/configuration/ui",
                 "/swagger-resources/**",
@@ -31,6 +29,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+
         // Http Basic 을 비활성화 하겠다.
         http.httpBasic().disable();
         // csrf 비활성화
@@ -43,6 +42,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         // 이 서비스는 세션이 없다.
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         // 로그인 말고 JWT 로 사용자 인증하기
-        http.addFilterBefore(new JwtAuthenticationFilter(jwtProvider, userDetailsService), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class);
     }
 }
