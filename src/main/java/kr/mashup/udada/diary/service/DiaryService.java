@@ -1,8 +1,5 @@
 package kr.mashup.udada.diary.service;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import kr.mashup.udada.config.jwt.InvitationJwt;
 import kr.mashup.udada.diary.dao.DiaryRepository;
 import kr.mashup.udada.diary.domain.Diary;
@@ -11,8 +8,8 @@ import kr.mashup.udada.diary.dto.ResponseDiaryDto;
 import kr.mashup.udada.diary.vo.InvitationInfo;
 import kr.mashup.udada.exception.BadRequestException;
 import kr.mashup.udada.exception.ResourceNotFoundException;
-import kr.mashup.udada.user.dao.UserRepository;
 import kr.mashup.udada.user.domain.User;
+import kr.mashup.udada.user.domain.UserRepository;
 import kr.mashup.udada.util.FileUtil;
 import kr.mashup.udada.util.S3Util;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j

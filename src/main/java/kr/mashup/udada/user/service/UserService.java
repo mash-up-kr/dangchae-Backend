@@ -51,7 +51,7 @@ public class UserService implements UserDetailsService {
     public SignInResponseDTO signIn(SignInRequestDTO signInRequestDTO, HttpServletRequest request) throws JsonProcessingException {
         User findUser;
         if(request.getHeader(JwtProvider.HEADER_NAME) != null) {
-            Long id = Long.valueOf(jwtProvider.getUserSub(jwtProvider.getTokenFromHeader(request)));
+            Long id = Long.valueOf(jwtProvider.getInfoFromToken(jwtProvider.getTokenFromHeader(request)));
             findUser = userRepository.findById(id).orElseThrow(NeedSignUpException::new);
         } else {
             validateToken(signInRequestDTO.getVendor(), signInRequestDTO.getToken());
@@ -96,7 +96,7 @@ public class UserService implements UserDetailsService {
     @Transactional
     public SignUpResponseDTO signUp(SignUpRequestDTO signUpRequestDTO) throws JsonProcessingException {
         validateToken(signUpRequestDTO.getVendor(), signUpRequestDTO.getToken());
-        signUpRequestDTO.setProfileURL(s3Util.upload(IMAGE_DIR, signUpRequestDTO.getProfile()));
+        signUpRequestDTO.setProfileURL(s3Util.upload(IMAGE_DIR, signUpRequestDTO.getProfile(), signUpRequestDTO.getNickname()));
         signUpRequestDTO.setUsername(getVendorUsername(signUpRequestDTO.getVendor(), signUpRequestDTO.getToken()));
         User user = userRepository.save(signUpRequestDTO.toEntity());
         user.updateToken(jwtProvider);
@@ -105,9 +105,10 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username)
+        long id = Long.valueOf(username);
+        User user = userRepository.findById(id)
                 .orElseThrow(ResourceNotFoundException::new);
-        if(!user.getUsername().equals(username)) {
+        if(user.getId() != id) {
             throw new ResourceNotFoundException();
         }
 
@@ -119,7 +120,7 @@ public class UserService implements UserDetailsService {
         UserDetails userDetails = (UserDetails)principal;
 
         String username = userDetails.getUsername();
-        User user = userRepository.findByUsername(username)
+        User user = userRepository.findById(Long.valueOf(username))
                 .orElseThrow(ResourceNotFoundException::new);
 
         return user;
