@@ -3,6 +3,7 @@ package kr.mashup.udada.article.api;
 import kr.mashup.udada.article.dto.RequestWriteArticleDto;
 import kr.mashup.udada.article.dto.ResponseArticleDto;
 import kr.mashup.udada.article.dto.ResponseArticleListDto;
+import kr.mashup.udada.article.dto.ResponseRecentArticleDto;
 import kr.mashup.udada.article.service.ArticleService;
 import kr.mashup.udada.user.domain.User;
 import kr.mashup.udada.user.service.UserService;
@@ -13,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.YearMonth;
 import java.util.List;
 
@@ -61,4 +63,10 @@ public class ArticleController {
         articleService.deleteArticle(diaryId, articleId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
+
+    @GetMapping("/recent")
+    public ResponseEntity<ResponseRecentArticleDto> getRecentArticle() {
+        return ResponseEntity.status(HttpStatus.OK).body(articleService.getRecentArticle());
+    }
+
 }

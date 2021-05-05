@@ -5,8 +5,10 @@ import kr.mashup.udada.article.domain.Article;
 import kr.mashup.udada.article.dto.RequestWriteArticleDto;
 import kr.mashup.udada.article.dto.ResponseArticleDto;
 import kr.mashup.udada.article.dto.ResponseArticleListDto;
+import kr.mashup.udada.article.dto.ResponseRecentArticleDto;
 import kr.mashup.udada.exception.ResourceNotFoundException;
 import kr.mashup.udada.user.domain.User;
+import kr.mashup.udada.user.domain.UserRepository;
 import kr.mashup.udada.util.FileUtil;
 import kr.mashup.udada.util.S3Util;
 import kr.mashup.udada.util.Thumbnail;
@@ -14,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -27,6 +31,7 @@ import java.util.List;
 public class ArticleService {
 
     private final ArticleRepository articleRepository;
+    private final UserRepository userRepository;
 
     private final S3Util s3Util;
 
@@ -93,5 +98,11 @@ public class ArticleService {
     @Transactional
     public void deleteArticle(Long diaryId, Long articleId) {
         articleRepository.deleteByIdAndDiaryId(articleId, diaryId);
+    }
+
+    public ResponseRecentArticleDto getRecentArticle() {
+        UserDetails userDetails = (UserDetails)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Article article = articleRepository.findByWriterIdOrderByCreatedAtDesc(Long.valueOf(userDetails.getUsername()));
+        return ResponseRecentArticleDto.fromDomain(article);
     }
 }
