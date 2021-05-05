@@ -45,6 +45,7 @@ public class UserService implements UserDetailsService {
     @PostConstruct
     public void init() {
         userRepository.save(User.builder().username("dangchae0").vendor(Vendor.KAKAO).email("ysjleader@gmail.com").build());
+        userRepository.save(User.builder().username("dangchae1").vendor(Vendor.KAKAO).email("ysjleader@gmail.com").build());
     }
 
     @Transactional

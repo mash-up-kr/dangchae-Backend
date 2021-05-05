@@ -24,4 +24,5 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
 
     Page<List<ResponseArticleListDto>> findByDiaryIdAndCreatedAtBetween(Long diaryId, LocalDateTime start, LocalDateTime end, Pageable pageable);
 
+    Article findByWriterIdOrderByCreatedAtDesc(Long id);
 }
